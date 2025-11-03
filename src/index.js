@@ -3,15 +3,32 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'; 
+import RegisterPage from './register';
+import LoginPage from './login';
+import ResetPasswordPage from './resetpassword';
+import Middleware from './middleware';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<LoginPage />} />
+        <Route path='/register' element={<RegisterPage />} /> 
+        <Route 
+  path="/dashboard" 
+  element={
+    <Middleware>
+      <App />
+    </Middleware>
+  }
+/>
+
+        <Route path='/forgot-password' element={<ResetPasswordPage/>}/>
+      </Routes>
+    </BrowserRouter>
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

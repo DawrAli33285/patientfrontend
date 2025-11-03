@@ -1,0 +1,359 @@
+.container {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 40px;
+    border: 1px solid #f3f4f6;
+    width: 100%;
+  }
+  
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  
+  .iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+    border-radius: 50%;
+    margin-bottom: 16px;
+  }
+  
+  .iconWrapper svg {
+    color: white;
+  }
+  
+  .header h1 {
+    font-size: 30px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+  
+  .subtitle {
+    color: #6b7280;
+    font-size: 15px;
+  }
+  
+  .alert {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .alertSuccess {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+  
+  .alertSuccess svg {
+    color: #16a34a;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .alertTitle {
+    color: #166534;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  
+  .alertMessage {
+    color: #15803d;
+    font-size: 14px;
+  }
+  
+  .alertError {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+  
+  .alertError svg {
+    color: #dc2626;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .alertError p {
+    color: #991b1b;
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .formGroup {
+    margin-bottom: 20px;
+  }
+  
+  .formGroup label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+  }
+  
+  .labelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .labelRow label {
+    margin-bottom: 0;
+  }
+  
+  .forgotLink {
+    font-size: 13px;
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  
+  .forgotLink:hover {
+    color: #2563eb;
+  }
+  
+  .inputWrapper {
+    position: relative;
+  }
+  
+  .inputIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .eyeIcon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+  
+  .eyeIcon:hover {
+    color: #6b7280;
+  }
+  
+  .eyeIcon:focus {
+    outline: none;
+    color: #3b82f6;
+  }
+  
+
+  .inputWrapper input {
+    width: 100%;
+    padding: 12px 40px 12px 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .inputWrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .inputWrapper input.error {
+    border-color: #fca5a5;
+    background: #fef2f2;
+  }
+  
+  .errorMessage {
+    margin-top: 4px;
+    font-size: 14px;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .rememberMe {
+    margin-bottom: 24px;
+  }
+  
+  .checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+  }
+  
+  .checkboxLabel input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #3b82f6;
+  }
+  
+  .submitBtn {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+    color: white;
+    font-weight: 600;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+  }
+  
+  .submitBtn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #7e22ce 100%);
+    transform: translateY(-1px);
+  }
+  
+  .submitBtn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+  
+  .submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .submitBtn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .divider {
+    position: relative;
+    text-align: center;
+    margin: 24px 0;
+  }
+  
+  .divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: #e5e7eb;
+  }
+  
+  .divider span {
+    position: relative;
+    background: white;
+    padding: 0 12px;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .footerLinks {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .footerLinks a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  
+  .footerLinks a:hover {
+    color: #2563eb;
+  }
+  
+  .terms {
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 24px;
+  }
+  
+  .terms a {
+    color: #374151;
+    text-decoration: none;
+  }
+  
+  .terms a:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 640px) {
+    .card {
+      padding: 32px 24px;
+    }
+  
+    .header h1 {
+      font-size: 26px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .container {
+      padding: 16px;
+    }
+  
+    .card {
+      padding: 24px 20px;
+    }
+  
+    .header h1 {
+      font-size: 24px;
+    }
+  }
