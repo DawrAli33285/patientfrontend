@@ -27,15 +27,7 @@ export default function LeakageForm({ onCalculate, loading, error }) {
     setCompetitors(newCompetitors);
   };  
 
-  const handlePrimaryAddressChange = (value) => {
-    // Handle both string and object values from LocationSuggestionField
-    if (typeof value === 'object' && value.name) {
-      setPrimaryAddress(value.name);
-    } else {
-      setPrimaryAddress(value);
-    }
-  };
-
+ 
   const validateInputs = () => {
     if (!primaryAddress.trim()) return false;
     if (!dateRange.start || !dateRange.end) return false;
