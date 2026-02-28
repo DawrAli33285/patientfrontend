@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Calendar, TrendingUp, Plus, X, AlertCircle } from 'lucide-react';
+import { MapPin, Calendar, TrendingUp, Plus, AlertCircle } from 'lucide-react';
 
 export default function LeakageForm({ onCalculate, loading, error }) {
   const [primaryAddress, setPrimaryAddress] = useState('');
@@ -20,11 +20,7 @@ export default function LeakageForm({ onCalculate, loading, error }) {
     }
   };
 
-  const handleRemoveCompetitor = (index) => {
-    const newCompetitors = competitors.filter((_, i) => i !== index);
-    setCompetitors(newCompetitors);
-  };
-
+ 
   const handleCompetitorChange = (index, value) => {
     const newCompetitors = [...competitors];
     newCompetitors[index].address = value;

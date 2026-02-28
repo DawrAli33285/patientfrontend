@@ -1,12 +1,12 @@
 import React from 'react';
-import { FileText, Download, BarChart3, Users, ArrowRightLeft, MapPin, TrendingUp } from 'lucide-react';
+import { Download, BarChart3, Users, ArrowRightLeft, MapPin, TrendingUp } from 'lucide-react';
 
 export default function LeakageResults({ data, formData, onExport }) {
   if (!data) return null;
 
   function displayHNMIRange(hnmiPayload) {
     if (!hnmiPayload || !hnmiPayload.hnmi) return 'N/A';
-    const { conservative, expected, upper_bound } = hnmiPayload.hnmi;
+    const { conservative, upper_bound } = hnmiPayload.hnmi;
     return `${conservative.toLocaleString()} - ${upper_bound.toLocaleString()}`;
   }
   
