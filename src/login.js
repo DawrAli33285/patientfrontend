@@ -136,6 +136,7 @@ function LoginPage() {
       // Store user data or token if needed
       localStorage.setItem('user', JSON.stringify(data.user));
       // localStorage.setItem('token', data.token);
+      localStorage.setItem('token', data.token);
 
       setTimeout(() => {
         // Redirect to dashboard

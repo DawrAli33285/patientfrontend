@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { MapPin, Users, Calendar, TrendingUp, Plus, X, AlertCircle } from 'lucide-react';
+import { MapPin, Calendar, TrendingUp, Plus, X, AlertCircle } from 'lucide-react';
 
 export default function LeakageForm({ onCalculate, loading, error }) {
   const [primaryAddress, setPrimaryAddress] = useState('');
-  const [totalPatients, setTotalPatients] = useState('');
-  const [patientsRetained, setPatientsRetained] = useState('');
-  const [timePeriod, setTimePeriod] = useState('12');
-  const [competitors, setCompetitors] = useState([{ address: '', signalStrength: '' }]);
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: ''
+  });
+  const [competitors, setCompetitors] = useState([{ address: '' }]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [filters, setFilters] = useState({
+    dayOfWeek: '',
+    timeOfDay: ''
+  });
 
   const handleAddCompetitor = () => {
-    if (competitors.length < 25) {
-      setCompetitors([...competitors, { address: '', signalStrength: '' }]);
+    if (competitors.length < 10) {
+      setCompetitors([...competitors, { address: '' }]);
     }
   };
 
@@ -19,56 +25,50 @@ export default function LeakageForm({ onCalculate, loading, error }) {
     setCompetitors(newCompetitors);
   };
 
-  const handleCompetitorChange = (index, field, value) => {
+  const handleCompetitorChange = (index, value) => {
     const newCompetitors = [...competitors];
-    newCompetitors[index][field] = value;
+    newCompetitors[index].address = value;
     setCompetitors(newCompetitors);
+  };  
+
+  const handlePrimaryAddressChange = (value) => {
+    // Handle both string and object values from LocationSuggestionField
+    if (typeof value === 'object' && value.name) {
+      setPrimaryAddress(value.name);
+    } else {
+      setPrimaryAddress(value);
+    }
   };
 
   const validateInputs = () => {
     if (!primaryAddress.trim()) return false;
-    const total = parseInt(totalPatients);
-    if (!totalPatients || total <= 0) return false;
-    const retained = parseInt(patientsRetained);
-    if (patientsRetained === '' || retained < 0 || retained > total) return false;
-    const validCompetitors = competitors.filter(c => c.address.trim() !== '');
+    if (!dateRange.start || !dateRange.end) return false;
+    const validCompetitors = competitors.filter(c => c.address && c.address.trim() !== '');
     return validCompetitors.length > 0;
   };
 
   const handleSubmit = () => {
     const validCompetitors = competitors
-      .filter(c => c.address.trim() !== '')
-      .map(c => ({
+      .filter(c => c.address && c.address.trim() !== '')
+      .map(c => ({ 
         address: c.address.trim(),
-        signalStrength: c.signalStrength ? parseFloat(c.signalStrength) : null
+        latitude: c.latitude,
+        longitude: c.longitude
       }));
-
+  
     onCalculate({
       primaryAddress: primaryAddress.trim(),
-      totalPatients: parseInt(totalPatients),
-      patientsRetained: parseInt(patientsRetained),
-      timePeriod: parseInt(timePeriod),
-      competitors: validCompetitors
+      dateRange,
+      competitors: validCompetitors,
+      filters: showAdvanced ? filters : {}
     });
   };
-
-  const calculateLeakage = () => {
-    const total = parseInt(totalPatients);
-    const retained = parseInt(patientsRetained);
-    const leaked = total - retained;
-    if (total <= 0) return 0;
-    return ((leaked / total) * 100).toFixed(1);
-  };
-
-  const leakagePercent = totalPatients && patientsRetained !== ''
-    ? calculateLeakage()
-    : '—';
 
   return (
     <div style={styles.card}>
       <div style={styles.header}>
         <MapPin style={styles.headerIcon} />
-        <h1 style={styles.title}>Patient Leakage Analyzer</h1>
+        <h1 style={styles.title}>Location Traffic Comparison</h1>
       </div>
 
       <div style={styles.formContainer}>
@@ -76,129 +76,124 @@ export default function LeakageForm({ onCalculate, loading, error }) {
         <div style={styles.formGroup}>
           <label style={styles.label}>
             <MapPin style={styles.labelIcon} />
-            Primary Address *
+            Primary Location Address *
           </label>
           <input
             type="text"
             value={primaryAddress}
             onChange={(e) => setPrimaryAddress(e.target.value)}
-            placeholder="e.g., Main Clinic, 1450 Medical Way, Greenwood, IN"
+            placeholder="e.g., Starbucks, 123 Main St, New York, NY"
             style={styles.input}
+            required
           />
+          <small style={styles.helpText}>
+            Format: Name, Street, City, State (e.g., "Starbucks, 123 Main St, New York, NY")
+          </small>
         </div>
 
-        {/* Total Patients & Retained */}
+        {/* Date Range */}
         <div style={styles.twoColumn}>
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              <Users style={styles.labelIcon} />
-              Total Patients Served *
+              <Calendar style={styles.labelIcon} />
+              Start Date *
             </label>
             <input
-              type="number"
-              value={totalPatients}
-              onChange={(e) => setTotalPatients(e.target.value)}
-              placeholder="e.g., 2615"
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
               style={styles.input}
-              min="1"
             />
           </div>
 
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              <Users style={styles.labelIcon} />
-              Patients Retained at Primary *
+              <Calendar style={styles.labelIcon} />
+              End Date *
             </label>
             <input
-              type="number"
-              value={patientsRetained}
-              onChange={(e) => setPatientsRetained(e.target.value)}
-              placeholder="e.g., 362"
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
               style={styles.input}
-              min="0"
-              max={totalPatients || undefined}
             />
           </div>
-        </div>
-
-        {/* Active Leakage Display */}
-        {totalPatients && patientsRetained !== '' && (
-          <div style={styles.leakageBox}>
-            <TrendingUp style={styles.trendIcon} />
-            <div style={styles.leakageContent}>
-              <span style={styles.leakageLabel}>Patient Leakage Rate</span>
-              <span style={styles.leakageValue}>{leakagePercent}%</span>
-            </div>
-            <span style={styles.leakedCount}>
-              ({parseInt(totalPatients) - parseInt(patientsRetained)} of {parseInt(totalPatients)} patients)
-            </span>
-          </div>
-        )}
-
-        {/* Time Period */}
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            <Calendar style={styles.labelIcon} />
-            Time Period (Months) *
-          </label>
-          <select
-            value={timePeriod}
-            onChange={(e) => setTimePeriod(e.target.value)}
-            style={styles.select}
-          >
-            {[1, 3, 6, 12, 18, 24].map(m => (
-              <option key={m} value={m}>
-                {m} month{m !== 1 ? 's' : ''}
-              </option>
-            ))}
-          </select>
         </div>
 
         {/* Competitor Addresses */}
         <div style={styles.formGroup}>
           <label style={styles.label}>
             <TrendingUp style={styles.labelIcon} />
-            Competitor Addresses ({competitors.filter(c => c.address.trim()).length}/{competitors.length}) *
+            Competitor Locations ({competitors.filter(c => c.address && c.address.trim()).length}) *
           </label>
-          <p style={styles.helperText}>
-            Signal Strength (optional): Enter 0-1 or weight value to influence patient distribution
-          </p>
           {competitors.map((competitor, index) => (
-            <div key={index} style={styles.competitorRow}>
-              <div style={styles.competitorInputs}>
-                <input
-                  type="text"
-                  value={competitor.address}
-                  onChange={(e) => handleCompetitorChange(index, 'address', e.target.value)}
-                  placeholder={`Competitor ${index + 1} address`}
-                  style={{ ...styles.input, flex: 1 }}
-                />
-                <input
-                  type="number"
-                  value={competitor.signalStrength}
-                  onChange={(e) => handleCompetitorChange(index, 'signalStrength', e.target.value)}
-                  placeholder="Signal"
-                  style={{ ...styles.input, width: '100px' }}
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              {competitors.length > 1 && (
-                <button
-                  onClick={() => handleRemoveCompetitor(index)}
-                  style={styles.removeButton}
-                  title="Remove competitor"
-                >
-                  <X style={styles.removeIcon} />
-                </button>
-              )}
-            </div>
-          ))}
-          {competitors.length < 25 && (
+  <div key={index} style={styles.competitorRow}>
+    <input
+      type="text"
+      value={competitor.address}
+      onChange={(e) => handleCompetitorChange(index, e.target.value)}
+      placeholder="e.g., Blue Bottle Coffee, 456 Oak Ave, Brooklyn, NY"
+      style={{ ...styles.input, flex: 1 }}
+    />
+  </div>
+))}
+
+          {competitors.length < 10 && (
             <button onClick={handleAddCompetitor} style={styles.addButton}>
               <Plus style={styles.addIcon} />
-              Add Competitor ({25 - competitors.length} remaining)
+              Add Competitor Location
             </button>
+          )}
+        </div>
+
+        {/* Advanced Filters (Optional) */}
+        <div style={styles.formGroup}>
+          <button 
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            style={styles.advancedToggle}
+          >
+            {showAdvanced ? '− Hide' : '+ Show'} Advanced Filters (Optional)
+          </button>
+          
+          {showAdvanced && (
+            <div style={styles.advancedFilters}>
+              <div style={styles.twoColumn}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Day of Week</label>
+                  <select
+                    value={filters.dayOfWeek}
+                    onChange={(e) => setFilters({...filters, dayOfWeek: e.target.value})}
+                    style={styles.select}
+                  >
+                    <option value="">All Days</option>
+                    <option value="weekday">Weekdays Only</option>
+                    <option value="weekend">Weekends Only</option>
+                    <option value="monday">Monday</option>
+                    <option value="tuesday">Tuesday</option>
+                    <option value="wednesday">Wednesday</option>
+                    <option value="thursday">Thursday</option>
+                    <option value="friday">Friday</option>
+                    <option value="saturday">Saturday</option>
+                    <option value="sunday">Sunday</option>
+                  </select>
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Time of Day</label>
+                  <select
+                    value={filters.timeOfDay}
+                    onChange={(e) => setFilters({...filters, timeOfDay: e.target.value})}
+                    style={styles.select}
+                  >
+                    <option value="">All Hours</option>
+                    <option value="morning">Morning (6am-12pm)</option>
+                    <option value="afternoon">Afternoon (12pm-6pm)</option>
+                    <option value="evening">Evening (6pm-12am)</option>
+                    <option value="night">Night (12am-6am)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
@@ -211,10 +206,14 @@ export default function LeakageForm({ onCalculate, loading, error }) {
 
         <button 
           onClick={handleSubmit} 
-          style={{...styles.calculateButton, opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer'}}
+          style={{
+            ...styles.calculateButton, 
+            opacity: loading || !validateInputs() ? 0.5 : 1, 
+            cursor: loading || !validateInputs() ? 'not-allowed' : 'pointer'
+          }}
           disabled={loading || !validateInputs()}
         >
-          {loading ? 'Calculating...' : 'Calculate Leakage Distribution'}
+          {loading ? 'Analyzing...' : 'Run Analysis'}
         </button>
       </div>
     </div>
@@ -276,6 +275,10 @@ const styles = {
     color: '#4f46e5',
     flexShrink: 0,
   },
+  inputWrapper: {
+    position: 'relative',
+    width: '100%',
+  },
   input: {
     padding: '0.75rem',
     border: '1px solid #d1d5db',
@@ -293,58 +296,10 @@ const styles = {
     backgroundColor: 'white',
     cursor: 'pointer',
   },
-  helperText: {
-    fontSize: '0.75rem',
-    color: '#6b7280',
-    margin: '0.25rem 0 0 0',
-    fontStyle: 'italic',
-  },
-  leakageBox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    backgroundColor: '#fef3c7',
-    padding: '1.25rem',
-    borderRadius: '8px',
-    borderLeft: '4px solid #f59e0b',
-  },
-  trendIcon: {
-    width: '24px',
-    height: '24px',
-    color: '#d97706',
-    flexShrink: 0,
-  },
-  leakageContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.25rem',
-  },
-  leakageLabel: {
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    color: '#92400e',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  leakageValue: {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    color: '#d97706',
-  },
-  leakedCount: {
-    fontSize: '0.875rem',
-    color: '#92400e',
-    marginLeft: 'auto',
-  },
   competitorRow: {
     display: 'flex',
     gap: '0.5rem',
     marginBottom: '0.5rem',
-  },
-  competitorInputs: {
-    display: 'flex',
-    gap: '0.5rem',
-    flex: 1,
   },
   removeButton: {
     padding: '0.5rem',
@@ -357,6 +312,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'background-color 0.2s',
+    flexShrink: 0,
   },
   removeIcon: {
     width: '20px',
@@ -379,6 +335,22 @@ const styles = {
   addIcon: {
     width: '18px',
     height: '18px',
+  },
+  advancedToggle: {
+    padding: '0.75rem',
+    border: '1px solid #d1d5db',
+    background: '#f9fafb',
+    color: '#374151',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    textAlign: 'left',
+  },
+  advancedFilters: {
+    marginTop: '1rem',
+    padding: '1rem',
+    background: '#f9fafb',
+    borderRadius: '6px',
   },
   errorBox: {
     display: 'flex',
