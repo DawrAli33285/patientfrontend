@@ -9,11 +9,7 @@ export default function LeakageForm({ onCalculate, loading, error }) {
   });
   const [inputMode, setInputMode] = useState('manual');
   const [competitors, setCompetitors] = useState([{ address: '' }]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [filters, setFilters] = useState({
-    dayOfWeek: '',
-    timeOfDay: ''
-  });
+
 
   const handleAddCompetitor = () => {
     if (competitors.length < 10) {
@@ -110,7 +106,7 @@ export default function LeakageForm({ onCalculate, loading, error }) {
       primaryAddress: primaryAddress.trim(),
       dateRange,
       competitors: validCompetitors,
-      filters: showAdvanced ? filters : {}
+      filters: {}
     });
   };
 
