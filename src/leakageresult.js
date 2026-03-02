@@ -136,7 +136,6 @@ export default function LeakageResults({ data, formData, onExport }) {
       </div>
 
       {/* Visitor Overlap Section */}
-      
       <div style={styles.card}>
         <h3 style={styles.sectionTitle}>
           <Users style={styles.sectionIcon} />
@@ -183,19 +182,14 @@ export default function LeakageResults({ data, formData, onExport }) {
                     </div>
                   </td>
                   <td style={{...styles.tableCell, textAlign: 'center'}}>
-  <span style={{
-    ...styles.percentBadge,
-    backgroundColor: comp.overlapPercent > 20 ? '#fee2e2' : '#dbeafe',
-    color: comp.overlapPercent > 20 ? '#991b1b' : '#1e40af'
-  }}>
-    {comp.overlapPercent}%
-  </span>
-  <div style={{ marginTop: '0.4rem', fontSize: '0.75rem', color: '#6b7280' }}>
-    <div>👥 <strong>{comp.totalPrimaryVisitors}</strong> total primary visitors</div>
-    <div>🔁 <strong>{comp.competitorVisitPercent}%</strong> visited here</div>
-  </div>
-</td>
-
+                    <span style={{
+                      ...styles.percentBadge,
+                      backgroundColor: comp.overlapPercent > 20 ? '#fee2e2' : '#dbeafe',
+                      color: comp.overlapPercent > 20 ? '#991b1b' : '#1e40af'
+                    }}>
+                      {comp.overlapPercent}%
+                    </span>
+                  </td>
                   <td style={{...styles.tableCell, textAlign: 'center'}}>
                     <div>{displayHNMIExpected(comp.primaryOnlySignals)}</div>
                     <div style={{fontSize: '0.75rem', color: '#6b7280'}}>
@@ -214,6 +208,27 @@ export default function LeakageResults({ data, formData, onExport }) {
           </table>
         </div>
       </div>
+      {/* Primary Visitor & Competitor Percentage Card */}
+<div style={styles.card}>
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+    <div style={{ textAlign: 'center', padding: '1rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>Total Primary Visitors</div>
+      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1f2937' }}>
+        {data.primary.signals.hnmi.expected.toLocaleString()}
+      </div>
+    </div>
+
+    {data.competitors.map((comp, idx) => (
+      <div key={idx} style={{ textAlign: 'center', padding: '1rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+        <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>{comp.name}</div>
+        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4f46e5' }}>
+          {comp.competitorVisitPercent}%
+        </div>
+        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>visited this competitor</div>
+      </div>
+    ))}
+  </div>
+</div>
 
       {/* Cross-Visitation Movement Section */}
       <div style={styles.card}>
