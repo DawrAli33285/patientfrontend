@@ -313,6 +313,8 @@ export default function GeoTestAnalyzer() {
               },
               sharedSignals: { hnmi: { conservative: Math.round(shared * 0.7), expected: shared, upper_bound: Math.round(shared * 1.3), label_text: '' } },
               overlapPercent: primaryMAIDCount > 0 ? Math.round((count / primaryMAIDCount) * 100) : 0,
+              totalPrimaryVisitors: primaryMAIDCount,
+              competitorVisitPercent: primaryMAIDCount > 0 ? parseFloat(((count / primaryMAIDCount) * 100).toFixed(1)) : 0,
               primaryOnlySignals: { hnmi: { conservative: Math.round((primaryMAIDCount - shared) * 0.7), expected: primaryMAIDCount - shared, upper_bound: Math.round((primaryMAIDCount - shared) * 1.3), label_text: '' } },
               competitorOnlySignals: { hnmi: { conservative: Math.round((count - shared) * 0.7), expected: count - shared, upper_bound: Math.round((count - shared) * 1.3), label_text: '' } },
               primaryToCompetitor: { hnmi: { conservative: Math.round(shared * 0.48), expected: Math.round(shared * 0.66), upper_bound: Math.round(shared * 0.84), label_text: '' } },

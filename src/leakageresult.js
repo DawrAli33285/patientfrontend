@@ -136,6 +136,7 @@ export default function LeakageResults({ data, formData, onExport }) {
       </div>
 
       {/* Visitor Overlap Section */}
+      
       <div style={styles.card}>
         <h3 style={styles.sectionTitle}>
           <Users style={styles.sectionIcon} />
@@ -182,14 +183,19 @@ export default function LeakageResults({ data, formData, onExport }) {
                     </div>
                   </td>
                   <td style={{...styles.tableCell, textAlign: 'center'}}>
-                    <span style={{
-                      ...styles.percentBadge,
-                      backgroundColor: comp.overlapPercent > 20 ? '#fee2e2' : '#dbeafe',
-                      color: comp.overlapPercent > 20 ? '#991b1b' : '#1e40af'
-                    }}>
-                      {comp.overlapPercent}%
-                    </span>
-                  </td>
+  <span style={{
+    ...styles.percentBadge,
+    backgroundColor: comp.overlapPercent > 20 ? '#fee2e2' : '#dbeafe',
+    color: comp.overlapPercent > 20 ? '#991b1b' : '#1e40af'
+  }}>
+    {comp.overlapPercent}%
+  </span>
+  <div style={{ marginTop: '0.4rem', fontSize: '0.75rem', color: '#6b7280' }}>
+    <div>👥 <strong>{comp.totalPrimaryVisitors}</strong> total primary visitors</div>
+    <div>🔁 <strong>{comp.competitorVisitPercent}%</strong> visited here</div>
+  </div>
+</td>
+
                   <td style={{...styles.tableCell, textAlign: 'center'}}>
                     <div>{displayHNMIExpected(comp.primaryOnlySignals)}</div>
                     <div style={{fontSize: '0.75rem', color: '#6b7280'}}>
