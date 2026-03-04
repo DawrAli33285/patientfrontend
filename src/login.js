@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styles from './LoginPage.module.css';
 import { BASE_URL } from './baseurl';
 
-// Icon Components
+
 const AlertCircle = ({ size = 20 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"></circle>
@@ -133,13 +133,13 @@ function LoginPage() {
 
       setSuccess(true);
       
-      // Store user data or token if needed
+    
       localStorage.setItem('user', JSON.stringify(data.user));
-      // localStorage.setItem('token', data.token);
+      
       localStorage.setItem('token', data.token);
 
       setTimeout(() => {
-        // Redirect to dashboard
+       
         window.location.href = '/dashboard';
       }, 1500);
 

@@ -9,7 +9,7 @@ export default function LeakageForm({ onCalculate, loading, error }) {
   });
   const [inputMode, setInputMode] = useState('manual');
   const [competitors, setCompetitors] = useState([{ address: '' }]);
-
+  const [pairs, setPairs] = useState([]);
 
   const handleAddCompetitor = () => {
     if (competitors.length < 10) {
@@ -66,8 +66,10 @@ export default function LeakageForm({ onCalculate, loading, error }) {
           return;
         }
   
-        setPrimaryAddress(parsed[0].primary);
-        setCompetitors(parsed.map(r => ({ address: r.competitor })));
+            setPairs(parsed.map(r => ({
+              primary: mapAddress(r.primary),
+              competitor: mapAddress(r.competitor)
+            })));
         alert(`✅ Loaded ${parsed.length} competitor addresses successfully.`);
   
       } catch (err) {
@@ -86,30 +88,48 @@ export default function LeakageForm({ onCalculate, loading, error }) {
 
  
   const validateInputs = () => {
-    if (!primaryAddress.trim()) return false;
     if (!dateRange.start || !dateRange.end) return false;
+    if (inputMode === 'csv') return pairs.length > 0;
+    if (!primaryAddress.trim()) return false;
     const validCompetitors = competitors.filter(c => c.address && c.address.trim() !== '');
     return validCompetitors.length > 0;
   };
+  
 
   const handleSubmit = () => {
-    
-    const validCompetitors = competitors
-      .filter(c => c.address && c.address.trim() !== '')
-      .map(c => ({ 
-        address: c.address.trim(),
-        latitude: c.latitude,
-        longitude: c.longitude
-      }));
+    if (inputMode === 'csv') {
+      onCalculate({
+        pairs,
+        dateRange,
+        filters: {}
+      });
+    } else {
+      const validCompetitors = competitors
+        .filter(c => c.address && c.address.trim() !== '')
+        .map(c => ({
+          address: c.address.trim(),
+          latitude: c.latitude,
+          longitude: c.longitude
+        }));
   
-    onCalculate({
-      primaryAddress: primaryAddress.trim(),
-      dateRange,
-      competitors: validCompetitors,
-      filters: {}
-    });
+      onCalculate({
+        primaryAddress: primaryAddress.trim(),
+        dateRange,
+        competitors: validCompetitors,
+        filters: {}
+      });
+    }
   };
 
+  const mapAddress = (addrString) => {
+    const parts = addrString.split(',').map(p => p.trim());
+    return {
+      name: parts[0] || '',
+      street: parts.slice(1, parts.length - 2).join(', ') || '',
+      city: parts[parts.length - 2] || '',
+      state: parts[parts.length - 1] || ''
+    };
+  };
   return (
     <div style={styles.card}>
       <div style={styles.header}>

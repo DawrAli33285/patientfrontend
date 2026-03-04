@@ -209,7 +209,7 @@ export default function LeakageResults({ data, formData, onExport }) {
         </div>
       </div>
       {/* Primary Visitor & Competitor Percentage Card */}
-<div style={styles.card}>
+{/* <div style={styles.card}>
   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
     <div style={{ textAlign: 'center', padding: '1rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
       <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>Total Primary Visitors</div>
@@ -228,7 +228,135 @@ export default function LeakageResults({ data, formData, onExport }) {
       </div>
     ))}
   </div>
-</div>
+</div> */}
+
+
+
+{/* Visitor Count & Percentage Card */}
+<div style={styles.card}>
+        <h3 style={styles.sectionTitle}>
+          <Users style={styles.sectionIcon} />
+          Visitor Counts &amp; Overlap Percentages
+        </h3>
+        <p style={styles.helperText}>
+          Total unique device IDs (MAIDs) detected at each location during the analysis period.
+        </p>
+
+       {/* Map over all primary groups */}
+       {(Array.isArray(data.primaryGroups) ? data.primaryGroups : [{ primary: data.primary, competitors: data.competitors }]).map((group, groupIdx) => (
+          <div key={groupIdx} style={{ marginBottom: groupIdx < (data.primaryGroups?.length || 1) - 1 ? '2.5rem' : 0 }}>
+
+            {/* Primary Location */}
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                Primary Location {data.primaryGroups?.length > 1 ? `#${groupIdx + 1}` : ''}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.25rem', background: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                <div style={{ width: '48px', height: '48px', background: '#4f46e5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Users size={22} color="white" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '1rem' }}>{group.primary.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{group.primary.address}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4f46e5' }}>
+                    {group.primary.signals.hnmi.expected.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>total visitors</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Competitor Locations for this primary */}
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#059669', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                Competitor Locations
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {group.competitors.map((comp, idx) => {
+                  const pct = comp.competitorVisitPercent || 0;
+                  const barColor = pct > 30 ? '#dc2626' : pct > 15 ? '#d97706' : '#059669';
+                  return (
+                    <div key={idx} style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{comp.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{comp.address}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', marginLeft: '1rem', flexShrink: 0 }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+                            {comp.signals.hnmi.expected.toLocaleString()}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>visitors</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ flex: 1, background: '#e5e7eb', borderRadius: '9999px', height: '8px', overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.min(pct, 100)}%`, background: barColor, height: '100%', borderRadius: '9999px', transition: 'width 0.5s ease' }} />
+                        </div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: '700', color: barColor, minWidth: '45px', textAlign: 'right' }}>
+                          {pct}%
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#6b7280', minWidth: '120px' }}>
+                          of primary visitors
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Divider between groups */}
+            {data.primaryGroups?.length > 1 && groupIdx < data.primaryGroups.length - 1 && (
+              <div style={{ borderTop: '2px dashed #e5e7eb', marginTop: '2rem' }} />
+            )}
+          </div>
+        ))}
+
+        {/* Competitor Locations */}
+        <div>
+          <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#059669', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+            Competitor Locations
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {data.competitors.map((comp, idx) => {
+              const pct = comp.competitorVisitPercent || 0;
+              const barColor = pct > 30 ? '#dc2626' : pct > 15 ? '#d97706' : '#059669';
+              return (
+                <div key={idx} style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{comp.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{comp.address}</div>
+                    </div>
+                    <div style={{ textAlign: 'right', marginLeft: '1rem', flexShrink: 0 }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+                        {comp.signals.hnmi.expected.toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>visitors</div>
+                    </div>
+                  </div>
+                  {/* Overlap bar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ flex: 1, background: '#e5e7eb', borderRadius: '9999px', height: '8px', overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.min(pct, 100)}%`, background: barColor, height: '100%', borderRadius: '9999px', transition: 'width 0.5s ease' }} />
+                    </div>
+                    <div style={{ fontSize: '0.875rem', fontWeight: '700', color: barColor, minWidth: '45px', textAlign: 'right' }}>
+                      {pct}%
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280', minWidth: '120px' }}>
+                      of primary visitors
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
 
       {/* Cross-Visitation Movement Section */}
       <div style={styles.card}>
@@ -343,11 +471,11 @@ export default function LeakageResults({ data, formData, onExport }) {
   );
 }
 
-// Helper function to generate insights
+
 function generateInsights(data) {
   const insights = [];
 
-  // Guard — no competitors means no insights to generate
+ 
   if (!data.competitors || data.competitors.length === 0) {
     insights.push({
       type: 'info',
@@ -357,7 +485,7 @@ function generateInsights(data) {
     return insights;
   }
 
-  // Find highest overlap
+
   const highestOverlap = data.competitors.reduce((max, comp) => 
     comp.overlapPercent > max.overlapPercent ? comp : max
   );
@@ -370,7 +498,7 @@ function generateInsights(data) {
     });
   }
   
-  // Check for signals leaving
+ 
   const leavingCompetitors = data.competitors.filter(comp => 
     comp.primaryToCompetitor?.hnmi?.expected > comp.competitorToPrimary?.hnmi?.expected
   );
@@ -382,8 +510,7 @@ function generateInsights(data) {
       description: `${leavingCompetitors.length} competitor(s) are capturing more signals from your location than you're capturing from them.`
     });
   }
-  
-  // Check for signals coming in
+
   const gainingCompetitors = data.competitors.filter(comp => 
     comp.competitorToPrimary?.hnmi?.expected > comp.primaryToCompetitor?.hnmi?.expected
   );
@@ -396,7 +523,7 @@ function generateInsights(data) {
     });
   }
   
-  // Total reach with HNMI
+
   const expectedSignals = data.primary.signals?.hnmi?.expected || 0;
   const signalRange = `${data.primary.signals?.hnmi?.conservative.toLocaleString()} - ${data.primary.signals?.hnmi?.upper_bound.toLocaleString()}`;
   

@@ -3,7 +3,7 @@ import LeakageForm from './leakageform';
 import LeakageResults from './leakageresult';
 import { BASE_URL } from './baseurl';
 
-// Hardcoded demo data for presentation
+
 const DEMO_DATA = {
   primary: {
     name: "Starbucks Reserve Roastery",
@@ -228,14 +228,13 @@ export default function GeoTestAnalyzer() {
         setData(DEMO_DATA);
         setFormData(DEMO_FORM_DATA);
       } else {
-        // Build addresses array from inputData
-        // inputData.primaryAddress format: "Name, Street, City, State ZIP"
+      
         console.log('[handleCalculate] full inputData:', JSON.stringify(inputData, null, 2));
 
         const mapAddress = (addrString) => {
           console.log('[mapAddress] raw input:', addrString);
           
-          // Parse the address string: "Name, Street, City, State"
+         
           const parts = addrString.split(',').map(p => p.trim());
           
           if (parts.length < 4) {
@@ -256,38 +255,92 @@ export default function GeoTestAnalyzer() {
           };
         };
 
-        const primary = mapAddress(inputData.primaryAddress || '');
-        const competitors = (inputData.competitors || []).map(c => mapAddress(c.address || ''));
-        const allAddresses = [primary, ...competitors];
-
-        console.log('[handleCalculate] allAddresses sent to API:', JSON.stringify(allAddresses, null, 2));
-
         const token = localStorage.getItem('token');
+
+        let requestBody;
+        
+        if (inputData.pairs && inputData.pairs.length > 0) {
+        
+          console.log('[handleCalculate] CSV mode, pairs:', inputData.pairs.length);
+          requestBody = {
+            pairs: inputData.pairs,
+            startDate: inputData.dateRange.start,
+            endDate: inputData.dateRange.end
+          };
+        } else {
+         
+          const primary = mapAddress(inputData.primaryAddress || '');
+          const competitors = (inputData.competitors || []).map(c => mapAddress(c.address || ''));
+          const allAddresses = [primary, ...competitors];
+          console.log('[handleCalculate] Manual mode, allAddresses:', JSON.stringify(allAddresses, null, 2));
+          requestBody = {
+            addresses: allAddresses,
+            startDate: inputData.dateRange.start,
+            endDate: inputData.dateRange.end
+          };
+        }
+        
         const res = await fetch(`${BASE_URL}/getFootData`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({
-            addresses: allAddresses,
-            startDate: inputData.dateRange.start,
-            endDate: inputData.dateRange.end
-          })
+          body: JSON.stringify(requestBody)
         });
         if (!res.ok) {
           const errBody = await res.json();
           throw new Error(errBody.error || 'API request failed');
         }
-
         const json = await res.json();
-        const results = json.data;
+       
+        const resultsArray = Array.isArray(json.data) ? json.data : [json.data];
+        const results = resultsArray[0];
         const primaryMAIDCount = results.primary_visitor_count;
+        const allSecondaryMatches = resultsArray.flatMap(r => r.secondary_matches);
+        results.secondary_matches = allSecondaryMatches;
 
+    
+        const primaryGroups = resultsArray.map(r => {
+          const pCount = r.primary_visitor_count;
+          return {
+            primary: {
+              name: r.primary_location,
+              address: r.primary_address || '',
+              signals: {
+                hnmi: {
+                  conservative: Math.round(pCount * 0.7),
+                  expected: pCount,
+                  upper_bound: Math.round(pCount * 1.3),
+                  label_text: ''
+                }
+              }
+            },
+            competitors: r.secondary_matches.map(match => {
+              const count = match.matched_maid_count;
+              const shared = Math.max(1, Math.round(count * 0.25));
+              return {
+                name: match.location,
+                address: match.address,
+                signals: { hnmi: { conservative: Math.round(count * 0.7), expected: count, upper_bound: Math.round(count * 1.3), label_text: '' } },
+                sharedSignals: { hnmi: { conservative: Math.round(shared * 0.7), expected: shared, upper_bound: Math.round(shared * 1.3), label_text: '' } },
+                overlapPercent: pCount > 0 ? Math.round((count / pCount) * 100) : 0,
+                totalPrimaryVisitors: pCount,
+                competitorVisitPercent: pCount > 0 ? parseFloat(((count / pCount) * 100).toFixed(1)) : 0,
+                primaryOnlySignals: { hnmi: { conservative: Math.round((pCount - shared) * 0.7), expected: pCount - shared, upper_bound: Math.round((pCount - shared) * 1.3), label_text: '' } },
+                competitorOnlySignals: { hnmi: { conservative: Math.round((count - shared) * 0.7), expected: count - shared, upper_bound: Math.round((count - shared) * 1.3), label_text: '' } },
+                primaryToCompetitor: { hnmi: { conservative: Math.round(shared * 0.48), expected: Math.round(shared * 0.66), upper_bound: Math.round(shared * 0.84), label_text: '' } },
+                competitorToPrimary: { hnmi: { conservative: Math.round(shared * 0.39), expected: Math.round(shared * 0.54), upper_bound: Math.round(shared * 0.7), label_text: '' } },
+                matchedMaids: match.matched_maids || [],
+              };
+            })
+          };
+        });
         const mapped = {
+          primaryGroups,
           primary: {
             name: results.primary_location,
-            address: `${allAddresses[0]?.street || ''}, ${allAddresses[0]?.city || ''}, ${allAddresses[0]?.state || ''}`,
+            address: results.primary_address || '',
             signals: {
               hnmi: {
                 conservative: Math.round(primaryMAIDCount * 0.7),
@@ -319,6 +372,7 @@ export default function GeoTestAnalyzer() {
               competitorOnlySignals: { hnmi: { conservative: Math.round((count - shared) * 0.7), expected: count - shared, upper_bound: Math.round((count - shared) * 1.3), label_text: '' } },
               primaryToCompetitor: { hnmi: { conservative: Math.round(shared * 0.48), expected: Math.round(shared * 0.66), upper_bound: Math.round(shared * 0.84), label_text: '' } },
               competitorToPrimary: { hnmi: { conservative: Math.round(shared * 0.39), expected: Math.round(shared * 0.54), upper_bound: Math.round(shared * 0.7), label_text: '' } },
+              matchedMaids: match.matched_maids || [],
             };
           }),
           trendData: (() => {
@@ -362,46 +416,66 @@ export default function GeoTestAnalyzer() {
       setLoading(false);
     }
   };
+
+
   const handleExport = async () => {
     if (!data || !formData) return;
-
-    // Create CSV content from demo data
+  
     const csvRows = [];
-    
-    // Header
+  
     csvRows.push('Location Analysis Report');
     csvRows.push(`Generated: ${new Date().toLocaleString()}`);
     csvRows.push(`Period: ${formData.dateRange.start} to ${formData.dateRange.end}`);
     csvRows.push('');
+  
+   
+    const groups = data.primaryGroups || [{
+      primary: data.primary,
+      competitors: data.competitors
+    }];
+  
+    groups.forEach((group, groupIdx) => {
+      csvRows.push(`PRIMARY LOCATION ${groups.length > 1 ? groupIdx + 1 : ''}`);
+      csvRows.push(`Name,${group.primary.name}`);
+      csvRows.push(`Address,${group.primary.address}`);
+      csvRows.push(`Signals (Expected),${group.primary.signals.hnmi.expected}`);
+      csvRows.push(`Signals (Range),${group.primary.signals.hnmi.conservative} - ${group.primary.signals.hnmi.upper_bound}`);
+      csvRows.push('');
+  
+      csvRows.push('COMPETITOR ANALYSIS');
+      csvRows.push('Competitor Name,Address,Signals,Shared Signals,Overlap %,Primary Only,Competitor Only,Primary→Competitor,Competitor→Primary,Matched MAIDs');
+  
+      group.competitors.forEach(comp => {
+        const maids = (comp.matchedMaids || []).join('; ');
+        csvRows.push([
+          `"${comp.name}"`,
+          `"${comp.address}"`,
+          comp.signals.hnmi.expected,
+          comp.sharedSignals.hnmi.expected,
+          `${comp.overlapPercent}%`,
+          comp.primaryOnlySignals.hnmi.expected,
+          comp.competitorOnlySignals.hnmi.expected,
+          comp.primaryToCompetitor.hnmi.expected,
+          comp.competitorToPrimary.hnmi.expected,
+          `"${maids}"`
+        ].join(','));
+      });
+  
+      csvRows.push('');
+  
     
-    // Primary location summary
-    csvRows.push('PRIMARY LOCATION');
-    csvRows.push(`Name,${data.primary.name}`);
-    csvRows.push(`Address,${data.primary.address}`);
-    csvRows.push(`Signals (Expected),${data.primary.signals.hnmi.expected}`);
-    csvRows.push(`Signals (Range),${data.primary.signals.hnmi.conservative} - ${data.primary.signals.hnmi.upper_bound}`);
-    csvRows.push('');
-    
-    // Competitor analysis
-    csvRows.push('COMPETITOR ANALYSIS');
-    csvRows.push('Location,Signals,Shared Signals,Overlap %,Primary Only,Competitor Only,Primary→Competitor,Competitor→Primary');
-    
-    data.competitors.forEach(comp => {
-      csvRows.push([
-        comp.name,
-        comp.signals.hnmi.expected,
-        comp.sharedSignals.hnmi.expected,
-        `${comp.overlapPercent}%`,
-        comp.primaryOnlySignals.hnmi.expected,
-        comp.competitorOnlySignals.hnmi.expected,
-        comp.primaryToCompetitor.hnmi.expected,
-        comp.competitorToPrimary.hnmi.expected
-      ].join(','));
+      csvRows.push('MAID DETAIL');
+      csvRows.push('Primary Location,Competitor Name,MAID');
+      group.competitors.forEach(comp => {
+        (comp.matchedMaids || []).forEach(maid => {
+          csvRows.push([`"${group.primary.name}"`, `"${comp.name}"`, maid].join(','));
+        });
+      });
+  
+      csvRows.push('');
     });
+  
     
-    csvRows.push('');
-    
-    // Trend data
     if (data.trendData && data.trendData.length > 0) {
       csvRows.push('TREND DATA');
       csvRows.push('Date,Signals (Expected),Conservative,Upper Bound');
@@ -414,14 +488,13 @@ export default function GeoTestAnalyzer() {
         ].join(','));
       });
     }
-    
-    // Create and download CSV
+  
     const csvContent = csvRows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `location-comparison-demo-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `location-comparison-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
