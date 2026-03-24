@@ -3,6 +3,7 @@ import { MapPin, Calendar, TrendingUp, Plus, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 export default function LeakageForm({ onCalculate, loading, error }) {
   const [primaryAddress, setPrimaryAddress] = useState('');
+  const [showSampleModal,setShowSampleModal]=useState(false)
   const [dateRange, setDateRange] = useState({
     start: '',
     end: ''
@@ -166,6 +167,23 @@ export default function LeakageForm({ onCalculate, loading, error }) {
   >
     Upload CSV
   </button>
+
+  <button
+  onClick={() => setShowSampleModal(true)}
+  style={{
+    padding: '0.5rem 1.25rem',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    background: 'white',
+    color: '#374151',
+    fontWeight: '600',
+    cursor: 'pointer'
+  }}
+>
+  Show Sample File
+</button>
+
+
 </div>
 
 <div style={styles.formContainer}>
@@ -280,6 +298,70 @@ export default function LeakageForm({ onCalculate, loading, error }) {
           {loading ? 'Analyzing...' : 'Run Analysis'}
         </button>
       </div>
+
+      {showSampleModal && (
+  <div
+    onClick={() => setShowSampleModal(false)}
+    style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1000
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        background: 'white', borderRadius: '12px', padding: '1.5rem',
+        maxWidth: '680px', width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+        <div>
+          <p style={{ fontWeight: '600', fontSize: '1rem', margin: 0 }}>Sample file format</p>
+          <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '4px 0 0' }}>
+            Your .xlsx file must have these two columns in the first row
+          </p>
+        </div>
+        <button onClick={() => setShowSampleModal(false)}
+          style={{ border: 'none', background: '#f3f4f6', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontSize: '14px', color: '#6b7280' }}>
+          ✕
+        </button>
+      </div>
+
+      {/* Table preview */}
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', marginBottom: '1rem', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+        <thead>
+          <tr>
+            <th style={{ padding: '8px 12px', background: '#dbeafe', color: '#1d4ed8', textAlign: 'left', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb' }}>primary</th>
+            <th style={{ padding: '8px 12px', background: '#dbeafe', color: '#1d4ed8', textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>competitor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['Oglesby Center, 2000 E Greenville St, Anderson, SC', 'Imago MRI, 19 Milestone Plaza, Greenville, SC'],
+            ['Oglesby Center, 2000 E Greenville St, Anderson, SC', 'INNERVISION AT GROVE, 1 Cannon Dr, Greenville, SC'],
+          ].map(([p, c], i) => (
+            <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#f9fafb' }}>
+              <td style={{ padding: '6px 12px', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', color: '#374151' }}>{p}</td>
+              <td style={{ padding: '6px 12px', borderBottom: '1px solid #e5e7eb', color: '#374151' }}>{c}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem' }}>
+        <p style={{ fontSize: '13px', color: '#374151', margin: '0 0 4px', fontWeight: '600' }}>Address format per cell:</p>
+        <code style={{ fontSize: '12px', color: '#6b7280' }}>Name, Street Address, City, State</code>
+      </div>
+
+      <ul style={{ fontSize: '13px', color: '#6b7280', paddingLeft: '1.25rem', margin: 0, lineHeight: '1.8' }}>
+        <li>Row 1 must be the header: <code>primary</code> and <code>competitor</code></li>
+        <li>One pair per row — multiple competitors for the same primary is allowed</li>
+        <li>File must be saved as <code>.xlsx</code></li>
+      </ul>
+    </div>
+  </div>
+)}
     </div>
   );
 }
