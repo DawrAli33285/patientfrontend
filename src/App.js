@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import LeakageForm from './leakageform';
 import LeakageResults from './leakageresult';
+import PatientHeatMap from './PatientHeatMap';
 import { BASE_URL } from './baseurl';
+
 
 
 const DEMO_DATA = {
@@ -218,6 +220,8 @@ export default function GeoTestAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [demoMode, setDemoMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('leakage');
+ 
   const handleCalculate = async (inputData) => {
     setLoading(true);
     setError('');
@@ -512,8 +516,24 @@ export default function GeoTestAnalyzer() {
         )}
       </div>
       <div style={styles.maxWidth}>
-        {/* Demo mode toggle (hidden in production) */}
-        <div style={styles.demoToggle}>
+  {/* Tab Navigation */}
+  <div style={styles.tabBar}>
+    <button
+      style={{ ...styles.tabButton, ...(activeTab === 'leakage' ? styles.tabButtonActive : {}) }}
+      onClick={() => setActiveTab('leakage')}
+    >
+      Leakage Analysis
+    </button>
+    <button
+      style={{ ...styles.tabButton, ...(activeTab === 'audience' ? styles.tabButtonActive : {}) }}
+      onClick={() => setActiveTab('audience')}
+    >
+      Audience Mapping Engine
+    </button>
+  </div>
+
+  {/* Demo mode toggle (hidden in production) */}
+  <div style={styles.demoToggle}>
           <label style={styles.toggleLabel}>
             <input 
               type="checkbox" 
@@ -525,27 +545,37 @@ export default function GeoTestAnalyzer() {
           </label>
         </div>
 
-        <LeakageForm 
-          onCalculate={handleCalculate} 
-          loading={loading} 
-          error={error}
-        />
+        {activeTab === 'leakage' && (
+          <>
+            <LeakageForm 
+              onCalculate={handleCalculate} 
+              loading={loading} 
+              error={error}
+            />
 
-        {loading && (
-          <div style={styles.loadingContainer}>
-            <div style={styles.spinner}></div>
-            <p style={styles.loadingText}>
-              {demoMode ? 'Loading demo results...' : 'Analyzing foot traffic patterns...'}
-            </p>
-          </div>
+            {loading && (
+              <div style={styles.loadingContainer}>
+                <div style={styles.spinner}></div>
+                <p style={styles.loadingText}>
+                  {demoMode ? 'Loading demo results...' : 'Analyzing foot traffic patterns...'}
+                </p>
+              </div>
+            )}
+
+            {data && formData && (
+              <LeakageResults 
+                data={data} 
+                formData={formData}
+                onExport={handleExport}
+              />
+            )}
+          </>
         )}
 
-        {data && formData && (
-          <LeakageResults 
-            data={data} 
-            formData={formData}
-            onExport={handleExport}
-          />
+{activeTab === 'audience' && (
+          <div style={styles.audiencePlaceholder}>
+              <PatientHeatMap />
+          </div>
         )}
       </div>
       <style>{`
@@ -629,4 +659,39 @@ const styles = {
     color: '#4b5563',
     fontWeight: '500',
   },
+  tabBar: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '1.5rem',
+  },
+  tabButton: {
+    padding: '0.6rem 1.25rem',
+    borderRadius: '8px',
+    border: '2px solid #e5e7eb',
+    backgroundColor: 'white',
+    color: '#6b7280',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  tabButtonActive: {
+    backgroundColor: '#4f46e5',
+    borderColor: '#4f46e5',
+    color: 'white',
+  },
+  audiencePlaceholder: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '4rem 2rem',
+    textAlign: 'center',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+  },
+  audienceTitle: {
+    fontSize: '1.75rem',
+    fontWeight: '700',
+    color: '#1e1b4b',
+    margin: 0,
+  },
+
 };
